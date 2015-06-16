@@ -1,2 +1,3 @@
-# django-composite-form
-Composite forms in django
+# django-smart-forms
+
+Django smart forms

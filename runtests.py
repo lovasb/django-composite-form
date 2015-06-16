@@ -15,7 +15,7 @@ if not settings.configured:
             }
         },
         INSTALLED_APPS = [
-            'composite_form', 'tests',
+            'smartforms', 'tests',
         ]
     )
 

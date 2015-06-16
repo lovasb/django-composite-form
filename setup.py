@@ -98,9 +98,9 @@ def find_package_data(
 
 
 setup(
-    name = 'django-composite-form',
+    name = 'django-smart-forms',
     version = version,
-    description = "Django composite form",
+    description = "Django smart forms",
     classifiers = [
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
@@ -109,13 +109,13 @@ setup(
         "Operating System :: OS Independent",
         "Natural Language :: English",
     ],
-    keywords = ['django', 'forms', 'composite-form'],
+    keywords = ['django', 'forms', 'smart-forms'],
     author = 'Lovas Bence',
     author_email = 'me@lovasb.com',
     url = 'http://lovasb.com',
     license = 'MIT',
     packages = find_packages(),
-    package_data = find_package_data("composite_form", only_in_packages = False),
+    package_data = find_package_data("smartforms", only_in_packages = False),
     include_package_data = True,
     zip_safe = False,
     install_requires = ['setuptools', 'django'],

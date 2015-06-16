@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from .forms import Form1, Form2
-from composite_form.forms import CompositeForm
+from smartforms.forms import CompositeForm
 
 
 class ValidationTest(TestCase):

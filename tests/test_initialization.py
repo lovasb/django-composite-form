@@ -4,8 +4,8 @@ from django.test import TestCase
 
 from .forms import Form1, Form1Dedup, Form2
 from .models import Example, Example2
-from composite_form.forms import CompositeForm
-from composite_form.models import CompositeModelForm
+from smartforms.forms import CompositeForm
+from smartforms.models import CompositeModelForm
 
 
 class ClassInitTest(TestCase):
