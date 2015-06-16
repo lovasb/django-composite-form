@@ -1,8 +1,11 @@
 from django import forms
+from django.forms.models import modelform_factory
 from django.test import TestCase
 
 from .forms import Form1, Form1Dedup, Form2
+from .models import Example, Example2
 from composite_form.forms import CompositeForm
+from composite_form.models import CompositeModelForm
 
 
 class ClassInitTest(TestCase):
@@ -72,3 +75,39 @@ class InstanceInitTest(TestCase):
         form = CompositeForm(form_instances=[form1, form2])
         self.assertEquals(len(form._subforms), 2)
         self.assertEquals(form.is_valid(), True)
+
+
+class ModelInitTest(TestCase):
+    def test_init_modelforms(self):
+        mform1 = modelform_factory(model=Example, fields=['a', 'b'])()
+        mform2 = modelform_factory(model=Example2, exclude=['d'])()
+
+        instances = [mform1, Form1()]
+        self.assertRaises(ValueError, lambda: CompositeModelForm(form_instances=instances))
+
+        instances = [mform1, mform2]
+        form = CompositeModelForm(form_instances=instances)
+        self.assertIsInstance(form, CompositeModelForm)
+        self.assertTrue(hasattr(form, 'save'))
+
+    def test_save_modelform(self):
+        mform1 = modelform_factory(model=Example, fields=['a', 'b'])({'a': 'a', 'b': 2})
+        mform2 = modelform_factory(model=Example2, exclude=['d'])({'c': 'c'})
+
+        instances = [mform1, mform2]
+        form = CompositeModelForm(form_instances=instances)
+        form.save()
+
+        self.assertEquals(Example.objects.filter(a='a', b=2).count(), 1)
+        self.assertEquals(Example2.objects.filter(c='c').count(), 1)
+
+    def test_save_rollback(self):
+        mform1 = modelform_factory(model=Example, fields=['a', 'b'])({'a': 'a'})
+        mform2 = modelform_factory(model=Example2, exclude=['d'])({'c': 'c'})
+
+        instances = [mform1, mform2]
+        form = CompositeModelForm(form_instances=instances)
+
+        self.assertRaises(ValueError, lambda: form.save())
+        self.assertEquals(Example.objects.count(), 0)
+        self.assertEquals(Example2.objects.count(), 0)
