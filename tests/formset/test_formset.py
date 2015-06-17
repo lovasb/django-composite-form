@@ -1,3 +1,4 @@
+from django import forms
 from django.db.models import Sum
 from django.test import TestCase
 
@@ -52,6 +53,11 @@ class FormSetTest(TestCase):
         for subform in form._subforms:
             self.assertEquals(subform.param1, 'example')
             self.assertEquals(subform.label_suffix, 'suff')
+
+    def test_iterable(self):
+        form = FormSet(form_class=Form1, repeat=2)
+        for field in form:
+            self.assertIsInstance(field, forms.forms.BoundField)
 
 
 class ModelFormSetTest(TestCase):

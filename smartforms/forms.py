@@ -11,6 +11,10 @@ class BaseForm(object):
     def is_bound(self):
         return all(form.is_bound for form in self._subforms)
 
+    def __iter__(self):
+        for name in self._field_name_mapper.keys():
+            yield self[name]
+
 
 class CompositeForm(BaseForm):
     def __init__(self, data=None, files=None, form_classes=[], form_instances=[]):
@@ -30,10 +34,6 @@ class CompositeForm(BaseForm):
         for i in range(0, len(self._subforms)):
             for name in self._subforms[i].fields.keys():
                 self._field_name_mapper[name] = i
-
-    def __iter__(self):
-        for name in self._field_name_mapper.keys():
-            yield self._subforms[self._field_name_mapper[name]][name]
 
     def __getitem__(self, name):
         "Returns a BoundField with the given name."
@@ -63,12 +63,32 @@ class CompositeForm(BaseForm):
 class FormSet(BaseForm):
     def __init__(self, data=None, files=None, form_class=None, repeat=1, **kwargs):
         self._subforms = []
+        self._field_name_mapper = {}
+
+        ## Initialize subforms
         for i in range(0, repeat):
             prefix = 'form{0}'.format(i)
             kwargs['prefix'] = prefix
             kwargs = self._update_kwargs(kwargs, i)
             obj = form_class(data, files, **kwargs)
             self._subforms.append(obj)
+
+        ## Fill up the field mapper
+        for i in range(0, len(self._subforms)):
+            for name in self._subforms[i].fields.keys():
+                prefix = 'form{0}'.format(i)
+                self._field_name_mapper['{0}-{1}'.format(prefix, name)] = i
+
+    def __getitem__(self, name):
+        "Returns a BoundField with the given name."
+        try:
+            name not in self._field_name_mapper.keys()
+        except KeyError:
+            raise KeyError(
+                "Key %r not found in '%s'" % (name, self.__class__.__name__))
+
+        subname = name.split('-', 1)[1]
+        return self._subforms[self._field_name_mapper[name]][subname]
 
     def _update_kwargs(self, kwargs, i):
         return kwargs
