@@ -34,6 +34,15 @@ class FormSetTest(TestCase):
         for field in form.fields.values():
             self.assertIn(field.label, ['field1', 'field2'])
 
+    def test_field_ordering(self):
+        form = FormSet(form_class=Form1, repeat=3)
+
+        last_counter = 0
+        for field in form:
+            field_counter = int(field.form.prefix.split('-')[0].replace('form', ''))
+            self.assertGreaterEqual(field_counter, last_counter)
+            last_counter = field_counter
+
     def test_post(self):
         post = {'form0-field1': 'asdf', 'form0-field2': 2}
         form = FormSet(post, form_class=Form1, repeat=2)
@@ -41,8 +50,14 @@ class FormSetTest(TestCase):
         ## Form isn't valid...
         self.assertFalse(form.is_valid())
 
-        ### because of the socind form
+        ### because of the second form
         self.assertTrue(form._subforms[0].is_valid())
+
+    def test_minimal_post(self):
+        post = {'form0-field1': 'asdf', 'form0-field2': 2}
+        form = FormSet(post, form_class=Form1, repeat=2, min_valid=1)
+
+        self.assertTrue(form.is_valid())
 
     def test_custom_parameter(self):
         """
@@ -93,3 +108,12 @@ class ModelFormSetTest(TestCase):
 
         s = Model.objects.all().aggregate(Sum('field1'))['field1__sum']
         self.assertEquals(s, 0)
+
+    def test_empty_forms(self):
+        post = {'form0-field1': 7}
+        form = ModelFormSet(post, form_class=ModelForm, repeat=5, min_valid=1, instances=Model.objects.all())
+
+        self.assertTrue(form.is_valid())
+        form.save()
+
+        self.assertEquals(Model.objects.count(), 1)

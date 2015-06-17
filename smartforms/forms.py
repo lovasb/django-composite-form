@@ -61,14 +61,19 @@ class CompositeForm(BaseForm):
 
 
 class FormSet(BaseForm):
-    def __init__(self, data=None, files=None, form_class=None, repeat=1, **kwargs):
+    def __init__(self, data=None, files=None, form_class=None, repeat=1, min_valid=None, **kwargs):
         self._subforms = []
-        self._field_name_mapper = {}
+        self._field_name_mapper = OrderedDict()
+
+        if min_valid is None:
+            min_valid = repeat
 
         ## Initialize subforms
         for i in range(0, repeat):
             prefix = 'form{0}'.format(i)
             kwargs['prefix'] = prefix
+            if i + 1 > min_valid:
+                kwargs['empty_permitted'] = True
             kwargs = self._update_kwargs(kwargs, i)
             obj = form_class(data, files, **kwargs)
             self._subforms.append(obj)
@@ -80,7 +85,7 @@ class FormSet(BaseForm):
                 self._field_name_mapper['{0}-{1}'.format(prefix, name)] = i
 
     def __getitem__(self, name):
-        "Returns a BoundField with the given name."
+        """ Returns a BoundField with the given name. """
         try:
             name not in self._field_name_mapper.keys()
         except KeyError:
