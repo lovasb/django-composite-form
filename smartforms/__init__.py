@@ -1,2 +1,2 @@
-from .forms import CompositeForm
-from .models import CompositeModelForm
+from .forms import CompositeForm, FormSet
+from .models import CompositeModelForm, ModelFormSet

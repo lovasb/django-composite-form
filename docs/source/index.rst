@@ -9,6 +9,7 @@ Welcome to django-smart-forms's documentation!
 Contents:
 
 .. toctree::
+   formset
    :maxdepth: 2
 
 

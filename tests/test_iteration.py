@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.forms.forms import BoundField
 
 from .forms import Form1, Form2
-from smartforms.forms import CompositeForm
+from smartforms import CompositeForm
 
 
 class FieldAccessTest(TestCase):
