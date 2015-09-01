@@ -55,7 +55,7 @@ class StatefulFormTestCase(TestCase):
 
         self.assertEqual(session['TestStatefulForm'], {'value1': 'asdf'})
         self.assertEqual(form.is_valid(), True)
-        self.assertEqual(session['TestStatefulForm'], {'value1': ['posted data'],'value2': ['1']})
+        self.assertEqual(session['TestStatefulForm'], {'value1': ['posted data'], 'value2': ['1']})
 
     def test_session_update_ignore(self):
         """
@@ -72,7 +72,6 @@ class StatefulFormTestCase(TestCase):
 
         self.assertEqual(form.is_valid(), False)
         self.assertEqual(session['TestStatefulForm'], {'value1': 'asdf'})
-
 
     def test_init_outdated_session(self):
         """

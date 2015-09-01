@@ -9,29 +9,34 @@ class StatefulForm(forms.Form):
         Stateful form persist it's own state between to request in the session.
         It's only persist the DATA, not the FILES.
     """
-    def __init__(self, *args, **kwargs):
+
+    def _override_data_with_session(self):
+        """
+        Override form.data values with session data if the method
+        """
         # Try to load initials data from the session.
         # At the initialization process store the datasource:
         #         1. If the form is posted, the the datasource is POST (post object)
         #         2. If there isn't any post object, then the data filled from session.
+        if self.is_bound: # form initialized with post data
+            self.initial_from_session = False
+            return
+
+        session_data = self.session.get(self.session_key, {})
+        if len(session_data):
+            for key, value in session_data.items():
+                self.data[key] = value
+
+            self.initial_from_session = True
+            self.is_bound = True
+
+    def __init__(self, *args, **kwargs):
         self.session = kwargs.pop('session', None)
-        self.prefix = kwargs.get('prefix', '')
-        self.initial_from_session = False
         if self.session is None or not hasattr(self.session, '__getitem__'):
             raise ValueError("Please set session parameter")
-        if not len(args) or args[0] is None: ## GET
-            #Load data from session
-            session_data = self.session.get(self.session_key, {})
-            if len(session_data):
-                q = QueryDict(None, mutable=True)
-                session_data['csrfmiddlewaretoken'] = [_get_new_csrf_key()]
-                for key, value in session_data.items():
-                    if not isinstance(value, (list, tuple)):
-                        value = [value]
-                    q.setlist(key, value)
-                args = (q,) + args[1:]
-                self.initial_from_session = True
+
         super(StatefulForm, self).__init__(*args, **kwargs)
+        self._override_data_with_session()
 
     @property
     def session_key(self):
