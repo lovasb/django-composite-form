@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.forms.forms import BoundField
 
-from .forms import Form1, Form2
+from ..forms import Form1, Form2
 from smartforms import CompositeForm
 
 

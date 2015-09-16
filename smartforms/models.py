@@ -1,6 +1,8 @@
 from django.db import transaction
 
-from .forms import BaseForm, CompositeForm, FormSet
+from .base import BaseForm
+from .composite import CompositeForm
+from .formset import FormSet
 
 
 class BaseModelForm(BaseForm):

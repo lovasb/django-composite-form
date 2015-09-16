@@ -2,8 +2,8 @@ from django import forms
 from django.forms.models import modelform_factory
 from django.test import TestCase
 
-from .forms import Form1, Form1Dedup, Form2
-from .models import Example, Example2
+from ..forms import Form1, Form1Dedup, Form2
+from ..models import Example, Example2
 from smartforms import CompositeForm, CompositeModelForm
 
 

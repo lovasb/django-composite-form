@@ -4,12 +4,11 @@ from django.http import QueryDict
 from django.middleware.csrf import _get_new_csrf_key
 
 
-class StatefulForm(forms.Form):
+class StatefulMixin(object):
     """
         Stateful form persist it's own state between to request in the session.
         It's only persist the DATA, not the FILES.
     """
-
     def _override_data_with_session(self):
         """
         Override form.data values with session data if the method
@@ -18,8 +17,8 @@ class StatefulForm(forms.Form):
         # At the initialization process store the datasource:
         #         1. If the form is posted, the the datasource is POST (post object)
         #         2. If there isn't any post object, then the data filled from session.
-        if self.is_bound: # form initialized with post data
-            self.initial_from_session = False
+        self.initial_from_session = False
+        if self.is_bound:  # form initialized with post data
             return
 
         session_data = self.session.get(self.session_key, {})
@@ -30,6 +29,32 @@ class StatefulForm(forms.Form):
             self.initial_from_session = True
             self.is_bound = True
 
+    @property
+    def session_key(self):
+        return "{}{}".format(getattr(self, 'prefix', None) or '', self.__class__.__name__)
+
+    @property
+    def session_dict(self):
+        post = {}
+        for key, values in self.data.items():
+            if key not in self.fields:
+                continue
+            post[key] = values
+
+        return post
+
+    def handle_session_after_validation(self, is_valid):
+        if self.initial_from_session:
+            if not is_valid:
+                self.data = {}
+                self.is_bound = False
+                self.session[self.session_key] = None
+        else:
+            if is_valid:
+                self.session[self.session_key] = self.session_dict
+
+
+class StatefulForm(forms.Form, StatefulMixin):
     def __init__(self, *args, **kwargs):
         self.session = kwargs.pop('session', None)
         if self.session is None or not hasattr(self.session, '__getitem__'):
@@ -38,24 +63,7 @@ class StatefulForm(forms.Form):
         super(StatefulForm, self).__init__(*args, **kwargs)
         self._override_data_with_session()
 
-    @property
-    def session_key(self):
-        return "{}{}".format(self.prefix or '', self.__class__.__name__)
-
-    def full_clean(self):
-        super(StatefulForm, self).full_clean()
-        # If the form data is from the session
-        if self.initial_from_session:
-            # If the form isn't valid, then remove the session data (it's outdated)
-            if not hasattr(self, 'cleaned_data'):
-                self.data = {}
-                self.is_bound = False
-                self.session[self.session_key] = None
-        else:
-            if not self._errors and self.is_bound:
-                post = {}
-                for key, values in self.data.lists():
-                    if key not in self.fields:
-                        continue
-                    post[key] = values
-                self.session[self.session_key] = post
+    def is_valid(self):
+        valid = super().is_valid()
+        self.handle_session_after_validation(valid)
+        return valid

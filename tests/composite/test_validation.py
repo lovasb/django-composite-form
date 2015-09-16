@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .forms import Form1, Form2
+from ..forms import Form1, Form2
 from smartforms import CompositeForm
 
 

@@ -1,11 +1,8 @@
 from copy import deepcopy
 
-from django import forms
 from django.test import TestCase, RequestFactory
 
 from .forms import TestStatefulForm
-
-
 
 
 class StatefulFormTestCase(TestCase):
@@ -35,7 +32,6 @@ class StatefulFormTestCase(TestCase):
         session_copy = deepcopy(session)
 
         form = TestStatefulForm(session=session)
-
         self.assertEqual(form.is_valid(), True) # The form is valid (because we bound the form with the session data)
         self.assertEqual(form.is_bound, True)
         self.assertEqual(session_copy['TestStatefulForm'], form.cleaned_data)
@@ -44,7 +40,7 @@ class StatefulFormTestCase(TestCase):
         """
         Stateful form override the session data after validation
         """
-        post = {'value1':'posted data', 'value2':'1'}
+        post = {'value1': 'posted data', 'value2': '1'}
         factory = RequestFactory()
         request = factory.post('/', post)
 
@@ -55,7 +51,7 @@ class StatefulFormTestCase(TestCase):
 
         self.assertEqual(session['TestStatefulForm'], {'value1': 'asdf'})
         self.assertEqual(form.is_valid(), True)
-        self.assertEqual(session['TestStatefulForm'], {'value1': ['posted data'], 'value2': ['1']})
+        self.assertEqual(session['TestStatefulForm'], {'value1': 'posted data', 'value2': '1'})
 
     def test_session_update_ignore(self):
         """
@@ -68,7 +64,7 @@ class StatefulFormTestCase(TestCase):
         session = dict()
         session['TestStatefulForm'] = {'value1': 'asdf'}
 
-        form = TestStatefulForm({'value1':'posted data', 'value2':'3'}, session=session)
+        form = TestStatefulForm({'value1': 'posted data', 'value2': '3'}, session=session)
 
         self.assertEqual(form.is_valid(), False)
         self.assertEqual(session['TestStatefulForm'], {'value1': 'asdf'})
@@ -77,11 +73,13 @@ class StatefulFormTestCase(TestCase):
         """
         If the session data isn't valid (outdated), then create empty form (not bounded)
         """
-        session = {'value1': 'wrong session data','value2':'11'}
-        form = TestStatefulForm(session=session)
+        session = dict()
+        session['TestStatefulForm'] = {'value1': 'wrong session data', 'value2': '3'}
 
+        form = TestStatefulForm(session=session)
         self.assertEquals(form.is_valid(), False)
         self.assertEqual(form.is_bound, False)
         self.assertEqual(form.data, {})
+        self.assertEqual(session['TestStatefulForm'], None)
 
 ### TODO test form prefix

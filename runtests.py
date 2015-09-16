@@ -24,5 +24,6 @@ if __name__ == "__main__":
     django.setup()
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
-    failures = test_runner.run_tests(["tests"])
+    suite = [sys.argv[1]] if len(sys.argv) > 1 else ["tests"]
+    failures = test_runner.run_tests(suite)
     sys.exit(bool(failures))
