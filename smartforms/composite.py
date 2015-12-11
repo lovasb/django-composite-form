@@ -1,5 +1,6 @@
 from copy import deepcopy
 from collections import OrderedDict
+from django.forms.utils import ErrorDict
 
 from .base import BaseForm
 
@@ -43,4 +44,11 @@ class CompositeForm(BaseForm):
         retval = OrderedDict()
         for form in self._subforms:
             retval.update(form.fields)
+        return retval
+
+    @property
+    def errors(self):
+        retval = ErrorDict()
+        for form in self._subforms:
+            retval.update(form.errors)
         return retval
