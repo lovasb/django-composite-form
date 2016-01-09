@@ -7,11 +7,14 @@ from .formset import FormSet
 
 class BaseModelForm(BaseForm):
     def save(self, commit=True):
+        retval = []
         with transaction.atomic():
             for form in self._subforms:
                 if form.empty_permitted and not form.has_changed():
                     continue
-                form.save(commit=commit)
+                retval.append(form.save(commit=commit))
+
+        return retval
 
 
 class CompositeModelForm(BaseModelForm, CompositeForm):

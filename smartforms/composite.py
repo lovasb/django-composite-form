@@ -45,10 +45,3 @@ class CompositeForm(BaseForm):
         for form in self._subforms:
             retval.update(form.fields)
         return retval
-
-    @property
-    def errors(self):
-        retval = ErrorDict()
-        for form in self._subforms:
-            retval.update(form.errors)
-        return retval

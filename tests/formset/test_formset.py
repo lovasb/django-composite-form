@@ -117,3 +117,11 @@ class ModelFormSetTest(TestCase):
         form.save()
 
         self.assertEquals(Model.objects.count(), 1)
+
+    def test_save(self):
+        post = {'form0-field1': 1, 'form1-field1': 2}
+        form = ModelFormSet(post, form_class=ModelForm, repeat=2)
+        objs = form.save()
+
+        self.assertEquals(len(objs), 2)
+        ### TODO: test rollback
